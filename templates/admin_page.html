@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý</title>
+    <link rel="stylesheet" href="static/admin_page_style.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="logo-details">
+            <i class='bx bxl-python icon'></i>
+            <div class="logo_name">Attendance</div>
+            <i class='bx bx-menu' id="btn"></i>
+        </div>
+        <ul class="nav-list">
+            <li>
+                <a href="#">
+                    <i class='bx bx-user'></i>
+                    <span class="links_name">Dữ liệu</span>
+                </a>
+                <span class="tooltip">Dữ liệu</span>
+            </li>
+            <li>
+                <a href="#">
+                    <i class='bx bx-list-check'></i>
+                    <span class="links_name">Điểm danh</span>
+                </a>
+                <span class="tooltip">Điểm danh</span>
+            </li>
+            <li class="profile">
+                <div class="profile-details">
+                    <div class="name_job">
+                        <div class="name">{{name}}</div>
+                        <div class="job">Admin</div>
+                    </div>
+                </div>
+                <i class='bx bx-log-out' id="log_out"></i>
+            </li>
+            <li>
+                <a href="#" id="searchBtn">
+                    <i class='bx bx-search'></i>
+                    <span class="links_name">Tìm kiếm</span>
+                </a>
+                <span class="tooltip">Tìm kiếm</span>
+            </li>
+            
+        </ul>
+    </div>
+    <section class="home-section">
+        <div class="ptitLogo">
+            <div class="imageLogo">
+                <img src="static\Logo_PTIT_University.png" alt="PTIT">
+                <div class="logo-text">Quản lý điểm danh</div>
+            </div>
+        </div>
+        <div class="data_view" style="display: none;">
+            <h2>Dữ liệu</h2>
+            <div class="scroll-table">
+                <table id="userTable">
+                    <thead>
+                        <tr>
+                            <th>Tên</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Dữ liệu người dùng sẽ được thêm vào đây -->
+                    </tbody>
+                </table>
+            </div>
+            <button id="addDataButton">Thêm Dữ liệu</button>
+        </div>
+        <div class="attendance_view" id="tree-container" style="display: none;">
+            <h2>Thông tin điểm danh hôm nay</h2>
+            <!-- Add the date input field and search button -->
+            <table id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th>Tên</th>
+                        <th>Thời gian</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dữ liệu điểm danh sẽ được thêm vào đây -->
+                </tbody>
+            </table>
+        </div>
+        <div class="search-attendance_view" id="tree-container" style="display: none;">
+            <h2>Tìm kiếm thông tin điểm danh</h2>
+            <div class="search-attendance">
+                <label for="selectedDate">Chọn ngày:</label>
+                <input type="date" id="selectedDate">
+                <button id="searchButton">Tìm kiếm</button>
+            </div>
+            <!-- Add the date input field and search button -->
+            <h3 id="searchResultTitle">Danh sách điểm danh cho ngày</h3>
+            <table id="search-attendanceTable">
+                <thead>
+                    <tr>
+                        <th>Tên</th>
+                        <th>Thời gian</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dữ liệu điểm danh sẽ được thêm vào đây -->
+                </tbody>
+            </table>
+        </div>
+
+        
+        <div id="popup" style="display: none;" class="popup">
+            <h2>Thêm dữ liệu</h2>
+            <form method="post" id="addFaceForm"
+                action="{{ url_for('adminPage', name=person_name, email=person_email) }}">
+                <label for="nameUser">Tên:</label>
+                <input type="text" id="nameUser" name="nameUser"><br><br>
+                <label for="email">Email:</label>
+                <input type="text" id="email" name="email"><br><br>
+                <br>
+                <input type="button" value="Submit" onclick="submitForm()">
+                <input type="button" value="Cancel" onclick="hidePopup()">
+            </form>
+        </div>
+    </section>
+    <script>
+        let dataLoaded = false;
+        let attendanceDataLoaded = false;
+        document.getElementById('addDataButton').addEventListener('click', function () {
+            showPopup();
+        });
+
+
+        function showPopup() {
+            document.getElementById('popup').style.display = 'block';
+        }
+
+        function hidePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+
+        function submitForm() {
+            document.getElementById('addFaceForm').submit();
+        }
+        let sidebar = document.querySelector(".sidebar");
+        let closeBtn = document.querySelector("#btn");
+        closeBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("open");
+            menuBtnChange();
+        });
+        function menuBtnChange() {
+            if (sidebar.classList.contains("open")) {
+                closeBtn.classList.replace("bx-menu", "bx-menu-alt-right");
+            } else {
+                closeBtn.classList.replace("bx-menu-alt-right", "bx-menu");
+            }
+        }
+        // Đăng xuất về trang chủ
+        document.getElementById('log_out').addEventListener('click', function () {
+            window.location.href = '/';
+        });
+        // Hiển thị trang tương ứng với lựa chọn từ sidebar 
+        document.addEventListener('DOMContentLoaded', function () {
+            // Lắng nghe sự kiện khi người dùng nhấp vào các liên kết sidebar
+            document.querySelector('.nav-list li:nth-child(1) a').addEventListener('click', function (event) {
+                event.preventDefault();
+                showDataView();
+            });
+
+            document.querySelector('.nav-list li:nth-child(2) a').addEventListener('click', function (event) {
+                event.preventDefault();
+                showAttendanceView();
+            });
+
+        });
+        function showDataView() {
+            // Ẩn lời chào
+            document.querySelector('.ptitLogo').style.display = 'none';
+
+            // Ẩn attendance_view
+            document.querySelector('.attendance_view').style.display = 'none';
+
+            // Hiển thị date_view
+            document.querySelector('.data_view').style.display = 'block';
+            if (dataLoaded) {
+                return;
+            }
+            document.getElementById('tableBody').innerHTML = '';
+            fetch('static/person_info.csv')
+                .then(response => response.text())
+                .then(data => {
+                    // Phân tách dữ liệu thành mảng các dòng
+                    let rows = data.split('\n').slice(1); // Bỏ qua tiêu đề (header) của cột
+
+                    // Lặp qua từng dòng
+                    rows.forEach(row => {
+                        // Phân tách dữ liệu của từng dòng thành các cột
+                        let columns = row.split(',');
+
+                        // Bỏ qua thông tin cột Password (cột thứ 2)
+                        let name = columns[0];
+                        let email = columns[1];
+
+                        // Tạo một hàng (tr) trong bảng
+                        let tableRow = document.createElement('tr');
+
+                        // Tạo các ô (td) trong hàng
+                        let nameCell = document.createElement('td');
+                        nameCell.textContent = name;
+                        tableRow.appendChild(nameCell);
+
+                        let emailCell = document.createElement('td');
+                        emailCell.textContent = email;
+                        tableRow.appendChild(emailCell);
+
+                        // Thêm hàng vào bảng
+                        document.getElementById('userTable').appendChild(tableRow);
+                        dataLoaded = true;
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function showAttendanceView() {
+            // Ẩn lời chào
+            document.querySelector('.ptitLogo').style.display = 'none';
+
+            // Ẩn date_view
+            document.querySelector('.data_view').style.display = 'none';
+
+            // Hiển thị attendance_view
+            document.querySelector('.attendance_view').style.display = 'block';
+            let today = new Date();
+            let dd = String(today.getDate()).padStart(2, '0');
+            let monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            let mm = monthNames[today.getMonth()]; // Tên tiếng Anh của tháng
+            let mm2 = String(today.getMonth()+1).padStart(2, '0');
+            let yy = String(today.getFullYear());
+            let currentDate = `${dd}-${mm2}-${yy.slice(-2)}`;
+
+            // Xây dựng đường dẫn tới file CSV
+            let csvFilePath = `static/Sorted_Attendance/${yy}/${mm}/Attendance_${currentDate}.csv`;
+
+            if(attendanceDataLoaded) return
+            // Fetch dữ liệu từ file CSV
+            fetch(csvFilePath)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('File not found');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    let rows = data.split('\n').slice(1);
+
+                    if (rows.length > 0) {
+                        rows.forEach(row => {
+                            let columns = row.split(',');
+                            let name = columns[0];
+                            let email = columns[1];
+
+                            let tableRow = document.createElement('tr');
+                            let nameCell = document.createElement('td');
+                            nameCell.textContent = name;
+                            tableRow.appendChild(nameCell);
+                            let emailCell = document.createElement('td');
+                            emailCell.textContent = email;
+                            tableRow.appendChild(emailCell);
+
+                            document.getElementById('attendanceTable').appendChild(tableRow);
+                            attendanceDataLoaded = true;
+                        });
+                    } else {
+                        // Nếu không có dữ liệu, hiển thị thông báo
+                        let tableRow = document.createElement('tr');
+                        let noDataCell = document.createElement('td');
+                        noDataCell.colSpan = 2;
+                        noDataCell.textContent = "Không có dữ liệu điểm danh hôm nay";
+                        tableRow.appendChild(noDataCell);
+                        document.getElementById('attendanceTable').appendChild(tableRow);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            let navLinks = document.querySelectorAll('.nav-list li a');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (event) {
+                    // Ngăn chặn hành động mặc định của liên kết
+                    event.preventDefault();
+
+                    // Loại bỏ tất cả các lớp active khỏi các mục sidebar
+                    navLinks.forEach(link => {
+                        link.parentElement.classList.remove('active');
+                    });
+
+                    // Thêm lớp active cho mục được chọn
+                    this.parentElement.classList.add('active');
+                });
+            });
+        });
+function showSearchAttendanceView() {
+    // Hide the welcome message
+    document.querySelector('.ptitLogo').style.display = 'none';
+
+    // Hide the "Điểm danh" (Attendance) view
+    document.querySelector('.attendance_view').style.display = 'none';
+
+    // Display the "Tìm kiếm" (Search) view
+    document.querySelector('.search-attendance_view').style.display = 'block';
+
+    // Ensure that the "Tìm kiếm" view is loaded only once
+    if (!searchAttendanceDataLoaded) {
+        // Add code here to load search-related data, if necessary.
+        // For example, you might fetch search data from a server and populate the table.
+        searchAttendanceDataLoaded = true; // Set a flag to avoid reloading data.
+    }
+}
+
+// Add an event listener for the "Tìm kiếm" (Search) button
+document.getElementById('searchButton').addEventListener('click', function () {
+    let selectedDate = document.getElementById('selectedDate').value;
+    if (selectedDate) {
+        // Parse the selected date and format it as needed
+        let dateParts = selectedDate.split('-');
+        let dd = dateParts[2];
+        let mm = dateParts[1];
+        let yy = dateParts[0];
+        let monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        let mm2 = monthNames[mm-1]; // Tên tiếng Anh của tháng
+        // Build the CSV file path
+        let csvFilePath = `static/Sorted_Attendance/${yy}/${mm2}/Attendance_${dd}-${mm}-${yy.slice(-2)}.csv`;
+        let searchResultTitle = `Danh sách điểm danh cho ngày ${dd} tháng ${mm2} năm ${yy}`;
+
+        // Set the title in the view
+        document.getElementById('searchResultTitle').textContent = searchResultTitle;
+        // Clear only the existing table rows (skip the title row)
+        let tableBody = document.getElementById('search-attendanceTable');
+        let tableRows = tableBody.querySelectorAll('tr');
+        for (let i = 1; i < tableRows.length; i++) {
+            tableBody.removeChild(tableRows[i]);
+        }
+        fetch(csvFilePath)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('File not found');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    let rows = data.split('\n').slice(1);
+
+                    if (rows.length > 0) {
+                        rows.forEach(row => {
+                            let columns = row.split(',');
+                            let name = columns[0];
+                            let email = columns[1];
+
+                            let tableRow = document.createElement('tr');
+                            let nameCell = document.createElement('td');
+                            nameCell.textContent = name;
+                            tableRow.appendChild(nameCell);
+                            let emailCell = document.createElement('td');
+                            emailCell.textContent = email;
+                            tableRow.appendChild(emailCell);
+
+                            document.getElementById('search-attendanceTable').appendChild(tableRow);
+                            attendanceDataLoaded = true;
+                        });
+                    } else {
+                        // Nếu không có dữ liệu, hiển thị thông báo
+                        let tableRow = document.createElement('tr');
+                        let noDataCell = document.createElement('td');
+                        noDataCell.colSpan = 2;
+                        noDataCell.textContent = "Không có dữ liệu điểm danh.";
+                        tableRow.appendChild(noDataCell);
+                        document.getElementById('search-attendanceTable').appendChild(tableRow);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+    }
+});
+// Add an event listener for the "Tìm kiếm" (Search) link
+document.querySelector('.nav-list li:nth-child(4) a').addEventListener('click', function (event) {
+    event.preventDefault();
+    showSearchAttendanceView();
+});
+    </script>
+</body>
+
+</html>

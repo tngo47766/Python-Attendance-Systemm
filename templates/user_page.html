@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Điểm danh</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='user_page_style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <h2>Thông tin sinh viên</h2>
+
+        <div>
+            <p><strong>Tên sinh viên:</strong> {{ name }}</p>
+            <p><strong>Email:</strong> {{ email }}</p>
+        </div>
+
+        <button onclick="attendance()">Điểm danh</button>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        // Thay đổi thông tin sinh viên
+        document.getElementById('name').textContent = "Tên sinh viên";
+        document.getElementById('email').textContent = "Email sinh viên";
+
+        function attendance() {
+            $.ajax({
+                url: '/attendance',
+                type: 'post',
+                success: function(response) {
+                    if (response.success) {
+                        alert("Điểm danh thành công");
+                    } else {
+                        alert("Điểm danh chưa hoàn thành");
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

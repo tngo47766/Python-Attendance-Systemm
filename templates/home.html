@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Chào mừng đến trang chủ!</h1>
+        
+        <!-- Sắp xếp 3 liên kết trên 3 dòng -->
+        <a href="{{ url_for('login', role='user') }}">Đăng nhập với vai trò User</a>
+        <a href="{{ url_for('login', role='admin') }}">Đăng nhập với vai trò Admin</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập Admin</title>
+    <link rel="stylesheet" href="/static/styles.css">
+
+</head>
+<body>
+    <div class="container">
+        <h2>Đăng nhập Admin</h2>
+        <form id = "myForm" method="post" action="{{ url_for('login', role='admin') }}">
+            <label for="email">Email:</label>
+            <input type="text" id="email" name="email" required><br>
+
+            <label for="password">Mật khẩu:</label>
+            <input type="password" id="password" name="password" required><br>
+
+            <input type="submit" value="Đăng nhập">
+        </form>
+        {% if login_failure %}
+            <div class="error-message">
+                Thông tin đăng nhập sai. Vui lòng thử lại.
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>

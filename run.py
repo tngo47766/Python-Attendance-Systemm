@@ -1,3 +1,5 @@
+import csv
+import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import attendanceModule
 import read_csv
@@ -94,6 +96,31 @@ def get_directory_tree():
         current_dir['files'] = files
 
     return jsonify(tree)
+@app.route('/getMarkedDates', methods=['GET', 'POST'])
+def get_marked_dates():
+    username = request.args.get('username')  # Lấy tên người dùng từ tham số trong URL
+    print(username)
+    marked_dates = []  # Danh sách ngày đã điểm danh
+
+    csv_folder = 'static/Sorted_Attendance/'
+    now = datetime.datetime.now()
+    year_folder = os.path.join(csv_folder, str(now.year))
+    month_folder = os.path.join(year_folder, now.strftime('%B'))
+
+    if os.path.exists(month_folder):
+        # Đọc các tệp CSV trong thư mục tháng của năm hiện tại
+        for csv_file in os.listdir(month_folder):
+            # print(csv_file)
+            date_str = csv_file.split('_')[-1].split('.')[0].split('-')[0]  # Trích xuất phần ngày từ tên tệp
+            csv_file_path = os.path.join(month_folder, csv_file)
+            with open(csv_file_path, 'r') as attendance_in_date:
+                csv_reader = csv.DictReader(attendance_in_date)
+                i = 0
+                for row in csv_reader:
+                    if row['NAME'] == username:
+                        marked_dates.append(int(date_str))
+        # print(marked_dates)        
+    return jsonify(success = True, markedDates=marked_dates) 
 
 
 if __name__ == '__main__':

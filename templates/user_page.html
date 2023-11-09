@@ -7,6 +7,130 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Điểm danh</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='user_page_style.css') }}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            justify-content: center;
+            min-height: 100vh;
+            background: #2e2b55;
+        }
+
+        .wrapper {
+            width: 450px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .wrapper header {
+            display: flex;
+            align-items: center;
+            padding: 25px 30px 10px;
+            justify-content: space-between;
+        }
+
+        header .icons {
+            display: flex;
+        }
+
+        header .icons span {
+            height: 38px;
+            width: 38px;
+            margin: 0 1px;
+            cursor: pointer;
+            color: #878787;
+            text-align: center;
+            line-height: 38px;
+            font-size: 1.9rem;
+            user-select: none;
+            border-radius: 50%;
+        }
+
+        .icons span:last-child {
+            margin-right: -10px;
+        }
+
+        header .icons span:hover {
+            background: #f2f2f2;
+        }
+
+        header .current-date {
+            font-size: 1.45rem;
+            font-weight: 500;
+        }
+
+        .calendar {
+            padding: 20px;
+        }
+
+        .calendar ul {
+            display: flex;
+            flex-wrap: wrap;
+            list-style: none;
+            text-align: center;
+        }
+
+        .calendar .days {
+            margin-bottom: 20px;
+        }
+
+        .calendar li {
+            color: #333;
+            width: calc(100% / 7);
+            font-size: 1.07rem;
+        }
+
+        .calendar .weeks li {
+            font-weight: 500;
+            cursor: default;
+        }
+
+        .calendar .days li {
+            z-index: 1;
+            cursor: pointer;
+            position: relative;
+            margin-top: 30px;
+        }
+
+        .days li.inactive {
+            color: #aaa;
+        }
+
+        .days li.active {
+            color: #fff;
+        }
+
+        .days li::before {
+            position: absolute;
+            content: "";
+            left: 50%;
+            top: 50%;
+            height: 40px;
+            width: 40px;
+            z-index: -1;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .days li.active::before {
+            background: #2e2b55;
+        }
+
+        .days li:not(.active):hover::before {
+            background: #f2f2f2;
+        }
+    </style>
 </head>
 
 <body>
@@ -14,31 +138,118 @@
         <h2>Thông tin sinh viên</h2>
 
         <div>
-            <p><strong>Tên sinh viên:</strong> {{ name }}</p>
+            <p><strong>Tên sinh viên:</strong> <span id="name">{{ name }}</span></p>
             <p><strong>Email:</strong> {{ email }}</p>
         </div>
 
         <button onclick="attendance()">Điểm danh</button>
+
+        <div class="calendarbox">
+            <div class="wrapper">
+                <header>
+                    <p class="current-date"></p>
+                </header>
+                <div class="calendar">
+                    <ul class="weeks">
+                        <li>Sun</li>
+                        <li>Mon</li>
+                        <li>Tue</li>
+                        <li>Wed</li>
+                        <li>Thu</li>
+                        <li>Fri</li>
+                        <li>Sat</li>
+                    </ul>
+                    <ul class="days"></ul>
+                </div>
+            </div>
+            
+        </div>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         // Thay đổi thông tin sinh viên
-        document.getElementById('name').textContent = "Tên sinh viên";
-        document.getElementById('email').textContent = "Email sinh viên";
+        // document.getElementById('name').textContent = "Tên sinh viên";
+        // document.getElementById('email').textContent = "Email sinh viên";
 
         function attendance() {
             $.ajax({
                 url: '/attendance',
                 type: 'post',
-                success: function(response) {
+                success: function (response) {
                     if (response.success) {
                         alert("Điểm danh thành công");
+                        //tải lại trang
+                        window.location.reload(true);
                     } else {
                         alert("Điểm danh chưa hoàn thành");
                     }
                 }
             });
         }
+    </script>
+    <script defer>
+        const daysTag = document.querySelector(".days"),
+            currentDate = document.querySelector(".current-date");
+
+        // Lấy tên người dùng từ phần HTML
+        const usernameElement = document.getElementById('name');
+        const username = usernameElement.textContent;
+
+        // getting new date, current year and month
+        let date = new Date();
+        let currYear = date.getFullYear();
+        let currMonth = date.getMonth();
+
+        // storing full name of all months in array
+        const months = [
+            "January", "February", "March", "April", "May", "June", "July",
+            "August", "September", "October", "November", "December"
+        ];
+
+        let markedDates = [];
+
+        // Gọi API để lấy danh sách các ngày đã điểm danh của người dùng hiện tại
+        $.ajax({
+            url: '/getMarkedDates',
+            type: 'GET',
+            // dataType: 'json',
+            data: { username: username },  // Thay 'user1' bằng username của người dùng hiện tại
+            success: function (response) {
+                
+                console.log(username);
+                if (response.success) {
+                    markedDates = response.markedDates; // Cập nhật danh sách ngày đã điểm danh
+                    console.log(response);
+                    renderCalendar();
+                } else {
+                    alert("Không thể tải danh sách ngày đã điểm danh.");
+                }
+            }
+        });
+
+
+        const renderCalendar = () => {
+            let firstDayofMonth = new Date(currYear, currMonth, 1).getDay(), // getting first day of month
+                lastDateofMonth = new Date(currYear, currMonth + 1, 0).getDate(), // getting last date of month
+                lastDayofMonth = new Date(currYear, currMonth, lastDateofMonth).getDay(), // getting last day of month
+                lastDateofLastMonth = new Date(currYear, currMonth, 0).getDate(); // getting last date of previous month
+            let liTag = "";
+
+            for (let i = firstDayofMonth; i > 0; i--) { // Những ngày cuối tháng trước
+                liTag += `<li class="inactive">${lastDateofLastMonth - i + 1}</li>`;
+            }
+            // Đánh dấu ngày user điểm danh
+            for (let i = 1; i <= lastDateofMonth; i++) {
+                let isMarked = markedDates.includes(i) ? "active" : "";
+                liTag += `<li class="${isMarked}">${i}</li>`;
+            }
+            for (let i = lastDayofMonth; i < 6; i++) { // Những ngày đầu tháng sau
+                liTag += `<li class="inactive">${i - lastDayofMonth + 1}</li>`
+            }
+            currentDate.innerText = `${months[currMonth]} ${currYear}`;
+            daysTag.innerHTML = liTag;
+        }
+        // renderCalendar();
     </script>
 </body>
 

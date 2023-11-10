@@ -22,8 +22,10 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    existed_user = read_csv.read_csv_to_dict('static/person_info.csv')
+    users.update(existed_user)
     role = request.args.get('role', 'user')  # Mặc định là user nếu không có tham số role
-
+    
     if role not in ['user', 'admin']:
         return 'Vai trò không hợp lệ.'
 

@@ -33,8 +33,8 @@ imgBackground = cv2.imread("background_new.png")
 COL_NAMES = ['NAME', 'TIME']
 
 # Email configuration
-sender_email = ''  # Your email address
-sender_password = ''  # Your email password
+sender_email = 'pythonattendancesystem@gmail.com'  # Your email address
+sender_password = 'joow tcyj mssp rbed'  # Your email password
 smtp_server = 'smtp.gmail.com'  # SMTP server (for Gmail)
 
 def send_email(subject, message, receiver_email):
